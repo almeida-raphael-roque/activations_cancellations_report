@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 
 # --- 1. CONFIGURAÇÕES E CREDENCIAIS ---
 BUCKET = "transdesk-develop-bronze"
-DATA_INICIO = "2026-01-09"
-DATA_FIM = "2026-02-01"
+DATA_INICIO = "2026-02-10"
+DATA_FIM = "2026-02-20"
 
 SCHEMAS = {
     'silver': 'vilesoft',

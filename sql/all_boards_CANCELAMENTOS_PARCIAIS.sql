@@ -64,7 +64,7 @@ where iss.id = 7
     and coalesce(iv.chassi,it.chassi,itt.chassi) is not null
 )
 
-and isss.description <> 'ATIVO'
+and isss.description IN ('CANCELADO', 'FINALIZADO', 'NAO RENOVADO')
 and CAST('1900-01-01 00:00:00' AS TIMESTAMP) 
     + (irsc.UPDATED_AT - 599266080000000000) / 864000000000 * INTERVAL '1' DAY >= TIMESTAMP '2025-01-01 00:00:00'
 
@@ -141,7 +141,7 @@ where iss.id = 7
     and coalesce(iv.chassi,it.chassi,itt.chassi) is not null
 )
 
-and isss.description <> 'ATIVO'
+and isss.description IN ('CANCELADO', 'FINALIZADO', 'NAO RENOVADO')
 and CAST('1900-01-01 00:00:00' AS TIMESTAMP) 
     + (irsc.UPDATED_AT - 599266080000000000) / 864000000000 * INTERVAL '1' DAY >= TIMESTAMP '2025-01-01 00:00:00'
 
@@ -218,7 +218,7 @@ where iss.id = 7
     and coalesce(iv.chassi,it.chassi,itt.chassi) is not null
 )
 
-and isss.description <> 'ATIVO'
+and isss.description IN ('CANCELADO', 'FINALIZADO', 'NAO RENOVADO')
 and CAST('1900-01-01 00:00:00' AS TIMESTAMP) 
     + (irsc.UPDATED_AT - 599266080000000000) / 864000000000 * INTERVAL '1' DAY >= TIMESTAMP '2025-01-01 00:00:00'
 
@@ -294,6 +294,6 @@ where iss.id = 7
     and coalesce(iv.chassi,it.chassi,itt.chassi) is not null
 )
 
-and isss.description <> 'ATIVO'
+and isss.description IN ('CANCELADO', 'FINALIZADO', 'NAO RENOVADO')
 and CAST('1900-01-01 00:00:00' AS TIMESTAMP) 
     + (irsc.UPDATED_AT - 599266080000000000) / 864000000000 * INTERVAL '1' DAY >= TIMESTAMP '2025-01-01 00:00:00'

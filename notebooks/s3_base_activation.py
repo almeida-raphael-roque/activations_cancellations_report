@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 
 # --- 1. CONFIGURAÇÕES E CREDENCIAIS ---
 BUCKET = "transdesk-develop-bronze"
-DATA_INICIO = "2025-01-09"
-DATA_FIM = "2026-02-01"
+DATA_INICIO = "2026-02-13"
+DATA_FIM = "2026-02-17"
 
 # AQUI ESTÁ O AJUSTE SOLICITADO:
 # Esquerda (Chave): Como está escrito no seu SQL (ex: FROM silver.tabela)

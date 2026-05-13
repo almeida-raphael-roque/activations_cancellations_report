@@ -58,6 +58,7 @@ WITH CTE_segtruck AS (
     WHERE date_cancellation IS NOT NULL
         AND coalesce(iv.BOARD,it.BOARD,itt.BOARD) IS NOT NULL
         AND coalesce(iv.chassi,it.chassi,itt.chassi) IS NOT NULL
+        AND iss.description NOT IN ('ATIVO', 'RENOVACAO')
 
 ),
 
@@ -121,6 +122,7 @@ CTE_stcoop AS (
     WHERE date_cancellation IS NOT NULL
         AND coalesce(iv.BOARD,it.BOARD,itt.BOARD) IS NOT NULL
         AND coalesce(iv.chassi,it.chassi,itt.chassi) IS NOT NULL
+        AND iss.description NOT IN ('ATIVO', 'RENOVACAO')
 
 ),
 
@@ -184,6 +186,7 @@ CTE_viavante AS (
     WHERE date_cancellation IS NOT NULL
         AND coalesce(iv.BOARD,it.BOARD,itt.BOARD) IS NOT NULL
         AND coalesce(iv.chassi,it.chassi,itt.chassi) IS NOT NULL
+        AND iss.description NOT IN ('ATIVO', 'RENOVACAO')
 ),
 
 CTE_tag AS (
@@ -247,6 +250,7 @@ CTE_tag AS (
     WHERE date_cancellation IS NOT NULL
         AND coalesce(iv.BOARD,it.BOARD,itt.BOARD) IS NOT NULL
         AND coalesce(iv.chassi,it.chassi,itt.chassi) IS NOT NULL
+        AND iss.description NOT IN ('ATIVO', 'RENOVACAO')
 )
 
 SELECT 
