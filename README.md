@@ -1,4 +1,9 @@
 # License Plate Activation and Cancellation Report
+<<<<<<< HEAD
+=======
+
+> **⚠️ For confidentiality and information security reasons, this repository has had sensitive data, names, and details removed or changed. All confidential or strategic information has been intentionally suppressed or obfuscated. This material is for demonstration purposes only. ⚠️**
+>>>>>>> 51e5a30 (final-LGPD)
 
 Automated analytics pipeline for daily monitoring of vehicle plate activations and cancellations across multiple insurance brands in a fleet-protection operation.
 
