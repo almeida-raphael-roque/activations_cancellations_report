@@ -1,4 +1,4 @@
-# Relatório de Ativações e Cancelamentos de Placas
+# License Plate Activation and Cancellation Report
 
 Automated analytics pipeline for daily monitoring of vehicle plate activations and cancellations across multiple insurance brands in a fleet-protection operation.
 
