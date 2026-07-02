@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 
 # --- 1. CONFIGURAÇÕES E CREDENCIAIS ---
 BUCKET = "transdesk-develop-bronze"
-DATA_INICIO = "2023-05-01"
-DATA_FIM = "2026-06-07"
+DATA_INICIO = "2025-09-05"
+DATA_FIM = "2025-09-05"
 
 # AQUI ESTÁ O AJUSTE SOLICITADO:
 # Esquerda (Chave): Como está escrito no seu SQL (ex: FROM silver.tabela)
@@ -89,7 +89,7 @@ def uma_url_parquet_qualquer(bucket_name: str, s3_folder: str, tb: str):
 for sql_schema_name in SCHEMAS.keys():
     con.execute(f"CREATE SCHEMA IF NOT EXISTS {sql_schema_name};")
 
-# --- 3. SEU SQL ORIGINAL (Mantendo nomes antigos como 'silver') ---
+# --- 3. SEU SQL ORIGINAL ---
 QUERY_BASE = """
 WITH base_unificada AS (
     -- BLOCO SILVER
@@ -102,8 +102,8 @@ WITH base_unificada AS (
         cat.nome AS cliente,
         CAST(
             COALESCE(
-                irs.DATE_INITAL_EFFECT, 
-                irs.DATE_FINAL_EFFECT - INTERVAL '364 days'
+                CAST(irs.DATE_INITAL_EFFECT AS DATE), 
+                CAST(irs.DATE_FINAL_EFFECT AS DATE) - INTERVAL '364 days'
             ) AS DATE
         ) AS inicio_vig,
         CAST(irs.date_activation AS DATE) AS data_ativacao,
@@ -138,8 +138,8 @@ WITH base_unificada AS (
         cat.nome AS cliente,
         CAST(
             COALESCE(
-                irs.DATE_INITAL_EFFECT, 
-                irs.DATE_FINAL_EFFECT - INTERVAL '364 days'
+                CAST(irs.DATE_INITAL_EFFECT AS DATE), 
+                CAST(irs.DATE_FINAL_EFFECT AS DATE) - INTERVAL '364 days'
             ) AS DATE
         ) AS inicio_vig,
         CAST(irs.date_activation AS DATE) AS data_ativacao,
@@ -174,8 +174,8 @@ WITH base_unificada AS (
         cat.nome AS cliente,
         CAST(
             COALESCE(
-                irs.DATE_INITAL_EFFECT, 
-                irs.DATE_FINAL_EFFECT - INTERVAL '364 days'
+                CAST(irs.DATE_INITAL_EFFECT AS DATE), 
+                CAST(irs.DATE_FINAL_EFFECT AS DATE) - INTERVAL '364 days'
             ) AS DATE
         ) AS inicio_vig,
         CAST(irs.date_activation AS DATE) AS data_ativacao,
@@ -210,8 +210,8 @@ WITH base_unificada AS (
         cat.nome AS cliente,
         CAST(
             COALESCE(
-                irs.DATE_INITAL_EFFECT, 
-                irs.DATE_FINAL_EFFECT - INTERVAL '364 days'
+                CAST(irs.DATE_INITAL_EFFECT AS DATE), 
+                CAST(irs.DATE_FINAL_EFFECT AS DATE) - INTERVAL '364 days'
             ) AS DATE
         ) AS inicio_vig,
         CAST(irs.date_activation AS DATE) AS data_ativacao,
@@ -247,6 +247,10 @@ def daterange(start_date, end_date):
         yield (start + timedelta(n)).strftime("%Y-%m-%d")
 
 print(f"Iniciando loop de {DATA_INICIO} a {DATA_FIM}...")
+
+# Prepara estrutura p/ resultados multiempresa
+empresa_nomes = ["segtruck", "stcoop", "viavante", "tag"]
+empresa_nome_query = {"Segtruck": "segtruck", "Stcoop": "stcoop", "Viavante": "viavante", "Tag": "tag"}
 
 for dia_x in daterange(DATA_INICIO, DATA_FIM):
     print(f"-> Processando dia: {dia_x}")
@@ -321,23 +325,47 @@ for dia_x in daterange(DATA_INICIO, DATA_FIM):
         # Extrair dados (SQL)
         df_dia = con.execute(QUERY_BASE).df()
 
+        # Inicializa resultado das empresas para o dia
+        linha_resultado = {nome: 0 for nome in empresa_nomes}
+        linha_resultado['data'] = dia_x
+
         if df_dia.empty:
-            count_ativos = 0
             print("   Nenhum dado bruto encontrado.")
         else:
             df_dia['inicio_vig'] = pd.to_datetime(df_dia['inicio_vig'], errors='coerce')
-            df_dia = df_dia.sort_values(by='inicio_vig', ascending=False)
-            df_limpo = df_dia.drop_duplicates(subset=['chassi'], keep='first')
-            count_ativos = len(df_limpo)
-            print(f"   Ativos finais: {count_ativos}")
 
-        resultados.append({'data': dia_x, 'ativos': count_ativos})
+            # Para cada empresa, filtrar, deduplicar e contar ativos
+            for query_nome, col_nome in empresa_nome_query.items():
+                df_empresa = df_dia[df_dia['empresa'] == query_nome].copy()
+                if not df_empresa.empty:
+                    df_empresa = df_empresa.sort_values(by='inicio_vig', ascending=False)
+                    df_empresa = df_empresa.drop_duplicates(subset=['chassi'], keep='first')
+                    linha_resultado[col_nome] = len(df_empresa)
+                    print(f"   Ativos finais {col_nome}: {linha_resultado[col_nome]}")
+                else:
+                    linha_resultado[col_nome] = 0
+
+        resultados.append(linha_resultado)
 
     except Exception as e:
         print(f"   ERRO CRÍTICO no dia {dia_x}: {e}")
-        resultados.append({'data': dia_x, 'ativos': 0, 'erro': str(e)})
+        linha_resultado = {nome: 0 for nome in empresa_nomes}
+        linha_resultado['data'] = dia_x
+        linha_resultado['erro'] = str(e)
+        resultados.append(linha_resultado)
 
 # --- 5. RESULTADO ---
 df_final = pd.DataFrame(resultados)
+# Garante a ordem das colunas: data, segtruck, stcoop, viavante, tag, (erro)
+col_order = ['data', 'segtruck', 'stcoop', 'viavante', 'tag']
+if 'erro' in df_final.columns:
+    col_order.append('erro')
+df_final = df_final[[c for c in col_order if c in df_final.columns]]
+
 print("\n--- Relatório Final ---")
 print(df_final)
+
+# Gerar o resultado em um arquivo Excel no caminho especificado
+excel_path = r"C:\Users\raphael.almeida\Documents\Processos\relatorio_ativacoes_cancelamentos\reports\relatorio_ativos_varchar4.xlsx"
+df_final.to_excel(excel_path, index=False)
+print(f"\nRelatório exportado para '{excel_path}'.")
